@@ -1,3 +1,5 @@
+Log onto your assigned cluster (Located on ME344 Canvas >> Pages >> Course Cluster Assignment
+
 1. Install gcloud CLI
 ```sudo tee /etc/yum.repos.d/google-cloud-sdk.repo <<'EOF'
 [google-cloud-cli]
