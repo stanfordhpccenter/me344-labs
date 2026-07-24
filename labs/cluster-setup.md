@@ -32,9 +32,10 @@ source ~/.bashrc
 ```
 
 4. Authenticate with your SUNetID Google Account
-```gcloud auth login --no-launch-browser
 ```
-Open the printed URL in a web browswer on your computer, log in with your @stanford.edu account, paste the code back into the shell prompt.
+gcloud auth login --no-launch-browser
+```
+Open the printed URL in a web browser on your computer, log in with your @stanford.edu account, paste the code back into the shell prompt.
 
 5. Set the project and get cluster credentials
 ```gcloud config set project soe-hpccenter
