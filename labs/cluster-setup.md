@@ -1,7 +1,8 @@
 Log onto your assigned cluster (Located on ME344 Canvas >> Pages >> Course Cluster Assignment
 
 1. Install gcloud CLI
-```sudo tee /etc/yum.repos.d/google-cloud-sdk.repo <<'EOF'
+```
+sudo tee /etc/yum.repos.d/google-cloud-sdk.repo <<'EOF'
 [google-cloud-cli]
 name=Google Cloud CLI
 baseurl=https://packages.cloud.google.com/yum/repos/cloud-sdk-el9-x86_64
@@ -14,7 +15,8 @@ sudo dnf install -y google-cloud-cli
 ```
 
 2. Install kubectl
-```sudo tee /etc/yum.repos.d/kubernetes.repo <<'EOF'
+```
+sudo tee /etc/yum.repos.d/kubernetes.repo <<'EOF'
 [kubernetes]
 name=Kubernetes
 baseurl=https://pkgs.k8s.io/core:/stable:/v1.30/rpm/
@@ -26,7 +28,8 @@ sudo dnf install -y kubectl
 ```
 
 3. Install the GKE auth plugin
-```sudo dnf install -y google-cloud-cli-gke-gcloud-auth-plugin
+```
+sudo dnf install -y google-cloud-cli-gke-gcloud-auth-plugin
 echo 'export USE_GKE_GCLOUD_AUTH_PLUGIN=True' >> ~/.bashrc
 source ~/.bashrc
 ```
@@ -38,13 +41,15 @@ gcloud auth login --no-launch-browser
 Open the printed URL in a web browser on your computer, log in with your @stanford.edu account, paste the code back into the shell prompt.
 
 5. Set the project and get cluster credentials
-```gcloud config set project soe-hpccenter
+```
+gcloud config set project soe-hpccenter
 gcloud container clusters get-credentials class-tpu-cluster --region=us-central1 --project=soe-hpccenter
 ```
 
 6. Create and submit the smoke test
 Save as test-job.yaml — use a unique job name (e.g. your SUNetID or Group Name) in "tpu-smoke-test-[SUNetID or GroupName]" so it doesn't collide with classmates:
-```apiVersion: batch/v1
+```
+apiVersion: batch/v1
 kind: Job
 metadata:
   name: tpu-smoke-test-[SUNetID or GroupName]
@@ -69,7 +74,8 @@ spec:
 ```
 
 7. Apply, watch it get admitted and scheduled
-```kubectl apply -f test-job.yaml
+```
+kubectl apply -f test-job.yaml
 kubectl get workloads
 kubectl get pods --watch
 ```
@@ -77,12 +83,16 @@ If it's stuck Pending with quota already ADMITTED: True, that just means GKE is 
 
 8. Get the logs — stream live to avoid missing them
 TPU nodes scale down automatically once idle, which garbage-collects the pod (and its logs) shortly after the job finishes. Don't wait to fetch logs after the fact — stream them live right after applying:
-```kubectl logs -f job/tpu-smoke-test-[NAME]
+```
+kubectl logs -f job/tpu-smoke-test-[NAME]
 ```
 You should see TPU pod scheduled successfully.
 
 9. If you missed the window — recover logs from Cloud Logging
 Even after the pod is gone, its stdout/stderr is retained in Cloud Logging (Autopilot ships it there automatically). Replace tpu-smoke-test-[NAME] with your job name:
-```gcloud logging read 'resource.type="k8s_container" AND resource.labels.namespace_name="default" AND labels."k8s-pod/job-name"="tpu-smoke-test-[NAME]"' --project=soe-hpccenter --limit=20 --format="value(textPayload)"
+```
+gcloud logging read 'resource.type="k8s_container" AND resource.labels.namespace_name="default" AND labels."k8s-pod/job-name"="tpu-smoke-test-[NAME]"' --project=soe-hpccenter --limit=20 --format="value(textPayload)"
 ```
 That completes the loop — submit, monitor, and retrieve output, with a fallback for logs even after the pod itself no longer exists.
+
+Your cluster is now ready to run the labs!
