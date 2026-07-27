@@ -218,6 +218,7 @@ Verify it wrote correctly:
 cat tunix-build/tunix_sft_main.py | head -20
 wc -l tunix-build/tunix_sft_main.py
 ```
+The last line of output should be <b>172 tunix-build/tunix_sft_main.py</b>
 
 2. Build and push the image:
 ```
