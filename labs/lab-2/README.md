@@ -220,7 +220,7 @@ wc -l tunix-build/tunix_sft_main.py
 ```
 The last line of output should be <b>172 tunix-build/tunix_sft_main.py</b>
 
-2. Build and push the image:
+2. Build and push the image (~5 mins):
 ```
 gcloud builds submit tunix-build/ --tag "$IMAGE_URI"
 gcloud artifacts docker images list ${REGION}-docker.pkg.dev/soe-hpccenter/tpu-images | grep "gemma3-finetune-${TEAM}"
