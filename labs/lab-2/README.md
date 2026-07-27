@@ -228,6 +228,55 @@ gcloud artifacts docker images list ${REGION}-docker.pkg.dev/soe-hpccenter/tpu-i
 
 3. Save and submit the training Job:
 ```
+cat > training.yaml <<'EOF'
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: finetune-${TEAM}
+  labels:
+    kueue.x-k8s.io/queue-name: student-queue
+spec:
+  backoffLimit: 2
+  template:
+    metadata:
+      annotations:
+        gke-gcsfuse/volumes: "true"
+    spec:
+      serviceAccountName: jax-sa
+      restartPolicy: Never
+      nodeSelector:
+        cloud.google.com/gke-tpu-accelerator: tpu-v5-lite-podslice
+        cloud.google.com/gke-tpu-topology: 2x4
+      containers:
+        - name: training
+          image: ${IMAGE_URI}
+          command: ["python3", "tunix_sft_main.py"]
+          env:
+            - { name: TEAM, value: "${TEAM}" }
+            - name: WANDB_API_KEY
+              valueFrom:
+                secretKeyRef: { name: wandb-secret, key: api_key, optional: true }
+          ports:
+            - containerPort: 8431
+          resources:
+            limits: { google.com/tpu: "8", memory: 300Gi }
+          volumeMounts:
+            - { name: gcs, mountPath: /gcs }
+            - { name: dshm, mountPath: /dev/shm }
+      volumes:
+        - name: gcs
+          csi:
+            driver: gcsfuse.csi.storage.gke.io
+            volumeAttributes:
+              bucketName: ${WORKSHOP_BUCKET}
+              mountOptions: "implicit-dirs"
+              fileCacheCapacity: 60Gi
+              fileCacheForRangeRead: "true"
+        - name: dshm
+          emptyDir: { medium: Memory, sizeLimit: 16Gi }
+EOF
+```
+```
 envsubst < training.yaml | kubectl apply -f -
 kubectl get workloads
 kubectl logs -f job/finetune-${TEAM} -c training | grep -v vision_tower
