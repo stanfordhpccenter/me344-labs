@@ -228,9 +228,6 @@ gcloud artifacts docker images list ${REGION}-docker.pkg.dev/soe-hpccenter/tpu-i
 
 3. Save and submit the training Job:
 ```
-cat > training.yaml <<'EOF'
-# (paste the rewritten training.yaml content here)
-EOF
 envsubst < training.yaml | kubectl apply -f -
 kubectl get workloads
 kubectl logs -f job/finetune-${TEAM} -c training | grep -v vision_tower
