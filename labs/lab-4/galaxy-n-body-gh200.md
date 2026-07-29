@@ -5,9 +5,9 @@
 
 A short, self-contained demo: simulate 16,384 stars gravitationally orbiting a central mass on the GH200's GPU, render the simulation as an animated GIF, and pull it back to your own machine to watch spiral arms form in real orbital mechanics you computed yourself.
 
-This runs on the same cluster as the Gemma 4 lab (control plane `hpcc-gke.stanford.edu` + GPU worker `hpcc-pilot`), using the same connection and namespace. If you haven't set that up yet, see "Before you begin" below; if you already have `$NS` exported from the Gemma 4 lab, you can skip straight to "Run the simulation."
+This runs on `stanford-pilot` — control plane `hpcc-gke.stanford.edu` + GPU worker `hpcc-pilot` — from the same class Linux server (`hpcc-cluster-N`) you already use for the TPU labs, via a separate kubectl context.
 
-**Heads up if you're doing this alongside the Gemma 4 lab**: there is exactly one physical GPU on this cluster. If `gemma4-vllm` (or anyone else's workload) is still running, this Job will queue in `Pending` until the GPU frees up. Either wait, or clean up the other workload first.
+**Heads up**: there is exactly one physical GPU on this cluster. If anyone else's workload is still running, this Job will queue in `Pending` until the GPU frees up. Either wait, or clean up the other workload first.
 
 ### What you'll do
 
@@ -18,7 +18,7 @@ This runs on the same cluster as the Gemma 4 lab (control plane `hpcc-gke.stanfo
 
 ### What you'll need
 
-- Your SSH login on `hpcc-gke.stanford.edu`, with `kubectl` and your kubeconfig already set up
+- Your class Linux server (`hpcc-cluster-N`), with a working `stanford-pilot` kubectl context already in `~/.kube/config`
 - Your assigned namespace (e.g. `ns-student08`)
 
 No Hugging Face token, no dataset, no pip installs from your shell — the container image used here (`nvcr.io/nvidia/pytorch:25.01-py3`) already has everything needed baked in.
@@ -27,16 +27,18 @@ No Hugging Face token, no dataset, no pip installs from your shell — the conta
 
 ---
 
-## Before you begin — connect to the cluster
+## Before you begin — switch context
 **Duration: 03:00**
 
-Skip this if you already have `$NS` set from the Gemma 4 lab.
+Skip this if you've already switched context and have `$NS` set from earlier in your session.
 
 ```bash
-kubectl config current-context
+kubectl config get-contexts
+kubectl config use-context <you>-context      # e.g. smjones-context
+kubectl auth whoami                            # confirm: system:serviceaccount:ns-<you>:<you>
 kubectl get nodes -o wide
-export NS=ns-student08        # your assigned namespace
-kubectl get pods -n $NS
+export NS=ns-<you>                             # your assigned namespace
+kubectl get pods
 ```
 
 ---
@@ -165,7 +167,7 @@ Do the decode step within the Job's 5-minute TTL window, or just re-run the Job 
 **Pull it to your own laptop** to actually view it, e.g.:
 
 ```bash
-scp <you>@hpcc-gke.stanford.edu:galaxy.gif .
+scp <you>@hpcc-cluster-N.stanford.edu:galaxy.gif .
 ```
 
 **Viewing on a Mac**: use Quick Look (select the file in Finder, press spacebar) or drag it into a browser — macOS Preview does **not** animate GIFs, it shows them as a click-through list of frames, which looks broken but isn't. Windows and Linux default viewers animate GIFs normally.
@@ -199,5 +201,5 @@ kubectl delete job galaxy-gif -n $NS --ignore-not-found
 ## What you can now explain
 
 1. Why does this Job print a base64-encoded block to the logs instead of just writing `galaxy.gif` to a file somewhere you could copy it from directly?
-2. What would happen if you ran this Job while `gemma4-vllm` was still deployed?
+2. What would happen if you ran this Job while another GPU workload was still deployed in your namespace?
 3. What's the actual physics being simulated, and why do spiral arms emerge from what starts as a fairly random distribution of stars?
