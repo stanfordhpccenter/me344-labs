@@ -23,22 +23,20 @@ This runs on `stanford-pilot` — control plane `hpcc-gke.stanford.edu` + GPU wo
 
 No Hugging Face token, no dataset, no pip installs from your shell — the container image used here (`nvcr.io/nvidia/pytorch:25.01-py3`) already has everything needed baked in.
 
-**Note for whoever administers `hpcc-pilot`** (not a student step): the image is large (~10 GB). Pre-pulling it once before class — `sudo crictl pull nvcr.io/nvidia/pytorch:25.01-py3` run directly on `hpcc-pilot` — means the first student's Job doesn't spend several minutes downloading it; every run after that starts in seconds.
-
 ---
 
 ## Before you begin — switch context
 **Duration: 03:00**
 
-Skip this if you've already switched context and have `$NS` set from earlier in your session.
+Skip this if you've already switched context and have `$NS` set from earlier in your session. The following uses <b>student01</b> as an example, use your student number (same as your cluster number):
 
 ```bash
 kubectl config get-contexts
-kubectl config use-context <you>-context      # e.g. smjones-context
-kubectl auth whoami                            # confirm: system:serviceaccount:ns-<you>:<you>
+kubectl config use-context student[N]-context   # e.g. student01-context
+kubectl auth whoami                             # confirm: system:serviceaccount:ns-student01:student01
 kubectl get nodes -o wide
-export NS=ns-<you>                             # your assigned namespace
-kubectl get pods
+export NS=ns-student[N]                         # your assigned namespace, e.g. ns-student01
+kubectl get pods                                # should return No resources found in ns-student[N] namespace.
 ```
 
 ---
