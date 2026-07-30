@@ -34,20 +34,27 @@ Skip this if you've already switched context and have `$NS` set from earlier in 
 kubectl config get-contexts
 ```
 ```bash
-kubectl config use-context student[N]-context   # e.g. student01-context
+kubectl config use-context student[N]-context
 ```
+e.g. student01-context
+
 ```bash
-kubectl auth whoami                             # confirm: system:serviceaccount:ns-student01:student01
+kubectl auth whoami
 ```
+confirm: system:serviceaccount:ns-student01:student01
+
 ```bash
 kubectl get nodes -o wide
 ```
 ```bash
-export NS=ns-student[N]                         # your assigned namespace, e.g. ns-student01
+export NS=ns-student[N]
 ```
+your assigned namespace, e.g. ns-student01
+
 ```bash
-kubectl get pods                                # should return No resources found in ns-student[N] namespace.
+kubectl get pods
 ```
+should return No resources found in ns-student[N] namespace.
 
 ---
 
