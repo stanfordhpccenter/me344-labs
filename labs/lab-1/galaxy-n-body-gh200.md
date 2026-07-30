@@ -182,7 +182,7 @@ Do the decode step within the Job's 5-minute TTL window, or just re-run the Job 
 **Pull it to your own laptop** to actually view it, e.g.:
 
 ```bash
-scp <you>@hpcc-cluster-N.stanford.edu:galaxy.gif .
+scp admin@hpcc-cluster-N.stanford.edu:galaxy.gif .
 ```
 
 **Viewing on a Mac**: use Quick Look (select the file in Finder, press spacebar) or drag it into a browser — macOS Preview does **not** animate GIFs, it shows them as a click-through list of frames, which looks broken but isn't. Windows and Linux default viewers animate GIFs normally.
@@ -339,5 +339,5 @@ Do the decode step within the Job's 5-minute TTL window, or just re-run the Job 
 **Pull it to your own laptop** to actually view it, e.g.:
 
 ```bash
-scp <you>@hpcc-cluster-N.stanford.edu:galaxy-1.gif .
+scp admin@hpcc-cluster-N.stanford.edu:galaxy-1.gif .
 ```
