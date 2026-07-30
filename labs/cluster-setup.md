@@ -95,4 +95,19 @@ gcloud logging read 'resource.type="k8s_container" AND resource.labels.namespace
 ```
 That completes the loop — submit, monitor, and retrieve output, with a fallback for logs even after the pod itself no longer exists.
 
-Your cluster is now ready to run the labs!
+10. Clean up the smoke test
+
+The Job has no ttlSecondsAfterFinished set, so it won't remove itself even after it completes — and this is a shared default namespace, so a stale Job clutters things for every other student and instructor running kubectl get jobs. Delete it once you've confirmed the smoke test worked:
+
+```bash
+kubectl delete job tpu-smoke-test-[SUNetID or GroupName]
+```
+Confirm nothing's left:
+
+```bash
+kubectl get pods
+kubectl get workloads
+```
+Both should come back with no trace of your job — kubectl get pods empty (or showing only other students'/teams' work), and your job no longer listed under kubectl get workloads. The TPU node itself scales back down automatically once nothing is using it (same as noted in step 8), but that's node-level cleanup — it doesn't remove the Job object itself, which is why the explicit kubectl delete above is still needed.
+
+Your cluster setup is now fully clean and ready for the labs.
