@@ -38,7 +38,7 @@ The output should match <b>gke_soe-hpccenter_us-west4_class-tpu-cluster-west4</b
 Choose your team identifier (e.g. `team-<your-sunet-id>` or a name your instructor assigns) and export the full set of variables used throughout this lab. **Re-run this after every fresh login** — these are session-scoped and won't persist:
 
 ```bash
-export TEAM=<your-team-name>
+export TEAM=<your-team-name>   # (e.g. team-[SUNetID]
 ```
 ```bash
 export REGION=us-central1
