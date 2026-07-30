@@ -24,7 +24,12 @@ Verify you're pointed at the right cluster:
 ```bash
 kubectl config current-context
 ```
-It should print `gke_soe-hpccenter_us-west4_class-tpu-cluster-west4`. If it doesn't (this can happen if you log back in after a break), switch to it:
+It should print `gke_soe-hpccenter_us-west4_class-tpu-cluster-west4`. If it doesn't, add and switch to it:
+```bash
+gcloud container clusters get-credentials class-tpu-cluster-west4 \
+  --region us-west4 --project soe-hpccenter
+```
+
 ```bash
 kubectl config use-context gke_soe-hpccenter_us-west4_class-tpu-cluster-west4
 ```
