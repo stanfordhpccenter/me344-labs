@@ -14,7 +14,8 @@ This runs on `stanford-pilot` — control plane `hpcc-gke.stanford.edu` + GPU wo
 - Connect to the cluster (or confirm you're already connected)
 - Submit the simulation as a Job — it computes on the GPU, renders to a GIF, and smuggles the file out through the logs (base64-encoded), since your RBAC persona can't `exec` into pods or reach any shared storage
 - Decode the GIF and pull it to your own machine
-- Watch your galaxy
+- Optionally, render a second galaxy with a different seed
+- Watch your galaxy — and clean up everything you created before you're done
 
 ### What you'll need
 
@@ -33,27 +34,35 @@ Skip this if you've already switched context and have `$NS` set from earlier in 
 ```bash
 kubectl config get-contexts
 ```
+
+
 ```bash
 kubectl config use-context student[N]-context
 ```
+
 `e.g. student01-context`
 
 ```bash
 kubectl auth whoami
 ```
+
 `confirm: system:serviceaccount:ns-student01:student01`
 
 ```bash
 kubectl get nodes -o wide
 ```
+
+
 ```bash
 export NS=ns-student[N]
 ```
+
 `your assigned namespace, e.g. ns-student01`
 
 ```bash
 kubectl get pods
 ```
+
 `should return No resources found in ns-student[N] namespace.`
 
 ---
@@ -189,37 +198,12 @@ scp admin@hpcc-cluster-N.stanford.edu:galaxy.gif .
 
 Expect: a spinning galaxy — thousands of stars orbiting a glowing core, spiral arms winding up as inner stars lap outer ones. Real orbital mechanics, visualized.
 
-**Want a different galaxy?** Change `torch.manual_seed(0)` in the script to any other integer and resubmit — every seed produces a visibly different galaxy.
-
 ---
 
-## Common failures
+## Optional — render a second galaxy with a different seed
+**Duration: 08:00**
 
-- **`exec format error`**: wrong CPU architecture for the image — GH200's CPU is Grace (ARM64), not x86. Don't swap in an amd64-only tag (this is exactly what broke the original `cuda-sample:nbody` image).
-- **Job sits `Pending`**: only one GPU on the cluster — check `kubectl get pods -n $NS` for another running workload (yours or a classmate's) holding it.
-- **First run is slow**: the ~10 GB image pull, if it wasn't pre-pulled by the instructor. Subsequent runs start in seconds once cached on the node.
-- **`kubectl logs` output looks truncated or the decode fails**: the GIF-extraction `sed` pattern needs the full, unbroken `-----BEGIN GIF-----` … `-----END GIF-----` block — if the Job was still running when you grabbed logs, wait for `Completed` and try again.
-
----
-
-## Clean up
-**Duration: 01:00**
-
-The Job cleans itself up automatically (`ttlSecondsAfterFinished: 300`), but you can remove it immediately once you have your GIF, so the GPU frees up right away for anyone waiting:
-
-```bash
-kubectl delete job galaxy-gif -n $NS --ignore-not-found
-```
-
----
-
-## What you can now explain
-
-1. Why does this Job print a base64-encoded block to the logs instead of just writing `galaxy.gif` to a file somewhere you could copy it from directly?
-2. What would happen if you ran this Job while another GPU workload was still deployed in your namespace?
-3. What's the actual physics being simulated, and why do spiral arms emerge from what starts as a fairly random distribution of stars?
-
-## OPTIONAL - torch.manual.seed set to 1 for another image generation
+Change `torch.manual_seed(0)` to any other integer and resubmit under a new Job name — every seed produces a visibly different galaxy. Below uses seed `1`:
 
 ```bash
 cat <<EOF | kubectl apply -f -
@@ -314,30 +298,60 @@ spec:
 EOF
 kubectl get pods -n $NS -l job-name=galaxy-gif-1 -w
 ```
-Expect `Pending → ContainerCreating → Running → Completed` within a couple of minutes (longer the very first time, while the ~10 GB image pulls, if it wasn't pre-pulled).
 
----
-
-## Decode and view your galaxy-1.gif file
-**Duration: 04:00**
-
-Pull the GIF out of the logs — the only output channel available to your persona, since it can't `exec` into pods or reach shared storage:
+Decode the same way, into a differently-named file:
 
 ```bash
 kubectl logs job/galaxy-gif-1 -n $NS | sed -n '/-----BEGIN GIF-----/,/-----END GIF-----/p' | sed '1d;$d' | base64 -d > galaxy-1.gif
 ls -lh galaxy-1.gif
-```
-
-Expect a file roughly 2–4 MB. The logs also show which GPU it ran on and a throughput score (billions of interactions/sec) — worth a look:
-
-```bash
-kubectl logs job/galaxy-gif-1 -n $NS | grep -E "simulated on|interactions/sec"
-```
-
-Do the decode step within the Job's 5-minute TTL window, or just re-run the Job — it starts in seconds once the image is cached.
-
-**Pull it to your own laptop** to actually view it, e.g.:
-
-```bash
 scp admin@hpcc-cluster-N.stanford.edu:galaxy-1.gif .
 ```
+
+**If you want to try more seeds**, give each attempt its own Job name (`galaxy-gif-2`, `galaxy-gif-3`, …) rather than reusing one — reusing a name without deleting the old Job first will fail (see Common Failures below).
+
+---
+
+## Common failures
+
+- **`exec format error`**: wrong CPU architecture for the image — GH200's CPU is Grace (ARM64), not x86. Don't swap in an amd64-only tag (this is exactly what broke the original `cuda-sample:nbody` image).
+- **Job sits `Pending`**: only one GPU on the cluster. Check the pod's events for the actual reason:
+  ```bash
+  kubectl describe pod -n $NS -l job-name=galaxy-gif | sed -n '/Events/,$p'
+  ```
+  `0/2 nodes are available: 1 Insufficient nvidia.com/gpu, ...` means someone else (yours or a classmate's workload) already holds the GPU — this is normal queueing, not a bug. Your persona can't list pods outside your own namespace, so you can't see who; just wait, or ask around.
+- **`kubectl apply` fails with `... is forbidden: ... cannot patch resource "jobs"`**: this happens if a Job with the same name already exists (even a finished/terminated one that hasn't been garbage-collected yet) — `kubectl apply` tries to patch it, and this RBAC persona can only `create`/`delete` Jobs, not `patch`/`update`. Fix: always delete before re-applying a Job with the same name:
+  ```bash
+  kubectl delete job galaxy-gif -n $NS --ignore-not-found
+  ```
+- **First run is slow**: the ~10 GB image pull, if it wasn't pre-pulled by the instructor. Subsequent runs start in seconds once cached on the node.
+- **`kubectl logs` output looks truncated or the decode fails**: the GIF-extraction `sed` pattern needs the full, unbroken `-----BEGIN GIF-----` … `-----END GIF-----` block — if the Job was still running when you grabbed logs, wait for `Completed` and try again.
+
+---
+
+## Clean up
+**Duration: 02:00**
+
+**Do this before you finish** — you're sharing one GPU with the whole class, and nothing here scales down or expires quickly enough to rely on. `ttlSecondsAfterFinished: 300` will eventually clean up finished Jobs on its own, but don't wait on it — remove everything you created now, so the GPU is free the moment you're done:
+
+```bash
+kubectl delete jobs,cronjobs,deployments --all -n $NS
+```
+
+That catches every Job you ran in this lab (`galaxy-gif`, `galaxy-gif-1`, and any extra seeds you tried), plus anything else this RBAC persona is able to create, even if you experimented beyond what this lab covers.
+
+Confirm nothing is left running:
+
+```bash
+kubectl get pods,jobs,cronjobs,deployments -n $NS
+```
+
+Expect `No resources found in ns-<you> namespace.` for all of them. If anything still shows up, delete it by name and re-check.
+
+---
+
+## What you can now explain
+
+1. Why does this Job print a base64-encoded block to the logs instead of just writing `galaxy.gif` to a file somewhere you could copy it from directly?
+2. What would happen if you ran this Job while another GPU workload was still deployed in your namespace?
+3. What's the actual physics being simulated, and why do spiral arms emerge from what starts as a fairly random distribution of stars?
+4. Why does re-running a Job with the same name fail differently than running one with a brand-new name?
