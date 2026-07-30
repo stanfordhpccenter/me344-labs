@@ -314,3 +314,30 @@ spec:
 EOF
 kubectl get pods -n $NS -l job-name=galaxy-gif-1 -w
 ```
+Expect `Pending → ContainerCreating → Running → Completed` within a couple of minutes (longer the very first time, while the ~10 GB image pulls, if it wasn't pre-pulled).
+
+---
+
+## Decode and view your galaxy-1.gif file
+**Duration: 04:00**
+
+Pull the GIF out of the logs — the only output channel available to your persona, since it can't `exec` into pods or reach shared storage:
+
+```bash
+kubectl logs job/galaxy-gif-1 -n $NS | sed -n '/-----BEGIN GIF-----/,/-----END GIF-----/p' | sed '1d;$d' | base64 -d > galaxy-1.gif
+ls -lh galaxy-1.gif
+```
+
+Expect a file roughly 2–4 MB. The logs also show which GPU it ran on and a throughput score (billions of interactions/sec) — worth a look:
+
+```bash
+kubectl logs job/galaxy-gif-1 -n $NS | grep -E "simulated on|interactions/sec"
+```
+
+Do the decode step within the Job's 5-minute TTL window, or just re-run the Job — it starts in seconds once the image is cached.
+
+**Pull it to your own laptop** to actually view it, e.g.:
+
+```bash
+scp <you>@hpcc-cluster-N.stanford.edu:galaxy-1.gif .
+```
