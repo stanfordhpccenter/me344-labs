@@ -579,6 +579,37 @@ When you're done testing, stop the port-forward:
 kill %1
 ```
 
+## Step 6 — Clean up
+
+Once you've confirmed your deployment works, tear down everything your team created — the serving deployment keeps a TPU slice reserved and billing until it's deleted, and your bucket storage otherwise sits around indefinitely. Please don't skip this step; your instructor has to clean up manually for any team that doesn't.
+
+**Delete your Kubernetes resources** (serving deployment + service, both jobs, and the merge script ConfigMap):
+```bash
+kubectl delete deployment vllm-4b-${TEAM}
+kubectl delete service vllm-svc-4b-${TEAM}
+kubectl delete job finetune-4b-${TEAM} --ignore-not-found
+kubectl delete job merge-4b-${TEAM} --ignore-not-found
+kubectl delete configmap merge-script-4b-${TEAM} --ignore-not-found
+```
+
+**Delete everything your team wrote to the bucket** — your LoRA training checkpoint, exported adapter, merged model, and XLA compile cache all live under one prefix, so a single recursive delete handles all of it:
+```bash
+gsutil -m rm -r gs://me344-tpu-labs-west4/teams/${TEAM}/
+```
+Do **not** delete anything under `gs://me344-tpu-labs-west4/models/` or `gs://me344-tpu-labs-west4/data/` — those are the shared base model and dataset, staged once for the whole class, and other teams still need them.
+
+**Delete your team's container image** from Artifact Registry (optional, but frees up storage — skip this if you plan to rerun the lab later without rebuilding):
+```bash
+gcloud artifacts docker images delete ${IMAGE_URI_4B} --quiet
+```
+
+Confirm everything is gone:
+```bash
+kubectl get deployments,services,jobs,configmaps | grep ${TEAM}
+gsutil ls gs://me344-tpu-labs-west4/teams/${TEAM}/ 2>&1
+```
+The first command should return nothing; the second should report `CommandException: One or more URLs matched no objects.`
+
 ---
 
 ## Expected timing
