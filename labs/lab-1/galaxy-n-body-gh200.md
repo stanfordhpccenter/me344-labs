@@ -226,7 +226,7 @@ cat <<EOF | kubectl apply -f -
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: galaxy-gif
+  name: galaxy-gif-1
   namespace: ${NS}
 spec:
   ttlSecondsAfterFinished: 300
@@ -312,5 +312,5 @@ spec:
           limits:
             nvidia.com/gpu: 1
 EOF
-kubectl get pods -n $NS -l job-name=galaxy-gif -w
+kubectl get pods -n $NS -l job-name=galaxy-gif-1 -w
 ```
