@@ -49,7 +49,7 @@ kubectl get nodes -o wide
 ```bash
 export NS=ns-student[N]
 ```
-`your assigned namespace, e.g. <b>ns-student01</b>`
+`your assigned namespace, e.g. ns-student01`
 
 ```bash
 kubectl get pods
