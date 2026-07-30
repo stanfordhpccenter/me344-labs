@@ -24,15 +24,16 @@ Verify you're pointed at the right cluster:
 ```bash
 kubectl config current-context
 ```
-It should print `gke_soe-hpccenter_us-west4_class-tpu-cluster-west4`. If it doesn't, add and switch to it:
+It should print `gke_soe-hpccenter_us-west4_class-tpu-cluster-west4`. If it doesn't, obtain credentials and switch to it:
 ```bash
 gcloud container clusters get-credentials class-tpu-cluster-west4 \
   --region us-west4 --project soe-hpccenter
 ```
 
 ```bash
-kubectl config use-context gke_soe-hpccenter_us-west4_class-tpu-cluster-west4
+kubectl config current-context
 ```
+The output should match <b>gke_soe-hpccenter_us-west4_class-tpu-cluster-west4</b>
 
 Choose your team identifier (e.g. `team-<your-sunet-id>` or a name your instructor assigns) and export the full set of variables used throughout this lab. **Re-run this after every fresh login** — these are session-scoped and won't persist:
 
