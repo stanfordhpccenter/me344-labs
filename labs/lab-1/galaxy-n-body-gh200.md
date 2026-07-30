@@ -165,6 +165,7 @@ spec:
 EOF
 kubectl get pods -n $NS -l job-name=galaxy-gif -w
 ```
+`CTRL+C keys end the wait and returns you to the shell`
 
 Expect `Pending → ContainerCreating → Running → Completed` within a couple of minutes (longer the very first time, while the ~10 GB image pulls, if it wasn't pre-pulled).
 
