@@ -245,8 +245,12 @@ save_file(adapter, str(ADAPTER_PATH / "adapter_model.safetensors"))
 }, indent=2))
 log("LoRA adapter (%d tensors) written to %s — Lab 3 merges it at serve time", len(adapter), ADAPTER_PATH)
 EOF
-
-gcloud builds submit --tag=$IMAGE_URI_4B tunix-build-4b/
+```
+Build the container.
+```bash
+gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+docker build -t "$IMAGE_URI_4B" tunix-build-4b/
+docker push "$IMAGE_URI_4B"
 ```
 
 Takes about 2 minutes.
