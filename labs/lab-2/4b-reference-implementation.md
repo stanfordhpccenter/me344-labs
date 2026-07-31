@@ -609,11 +609,6 @@ gsutil -m rm -r "gs://me344-tpu-labs-west4/teams/${TEAM:?TEAM is not set — re-
 ```
 Do **not** delete anything under `gs://me344-tpu-labs-west4/models/` or `gs://me344-tpu-labs-west4/data/` — those are the shared base model and dataset, staged once for the whole class, and other teams still need them. **Never** run this command against the bare `teams/` prefix with no team name — that deletes every team's data at once, not just yours.
 
-**Delete your team's container image** from Artifact Registry (optional, but frees up storage — skip this if you plan to rerun the lab later without rebuilding):
-```bash
-gcloud artifacts docker images delete ${IMAGE_URI_4B} --quiet
-```
-
 Confirm everything is gone:
 ```bash
 kubectl get deployments,services,jobs,configmaps | grep ${TEAM}
