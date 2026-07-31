@@ -33,8 +33,6 @@ Choose your team identifier (e.g. `team-<your-sunet-id>` or a name your instruct
 
 ```bash
 export TEAM=<your-team-name>
-```
-```bash
 export REGION=us-central1
 export WORKSHOP_BUCKET=me344-tpu-labs-west4
 export IMAGE_URI_4B=us-central1-docker.pkg.dev/soe-hpccenter/tpu-images/gemma3-4b-finetune-${TEAM}:latest
@@ -245,12 +243,8 @@ save_file(adapter, str(ADAPTER_PATH / "adapter_model.safetensors"))
 }, indent=2))
 log("LoRA adapter (%d tensors) written to %s — Lab 3 merges it at serve time", len(adapter), ADAPTER_PATH)
 EOF
-```
-Build the container.
-```bash
-gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
-docker build -t "$IMAGE_URI_4B" tunix-build-4b/
-docker push "$IMAGE_URI_4B"
+
+gcloud builds submit --tag=$IMAGE_URI_4B tunix-build-4b/
 ```
 
 Takes about 2 minutes.
@@ -589,20 +583,26 @@ kill %1
 
 Once you've confirmed your deployment works, tear down everything your team created — the serving deployment keeps a TPU slice reserved and billing until it's deleted, and your bucket storage otherwise sits around indefinitely. Please don't skip this step; your instructor has to clean up manually for any team that doesn't.
 
-**Delete your Kubernetes resources** (serving deployment + service, both jobs, and the merge script ConfigMap):
+**Bucket deletion in this lab is immediate and permanent — there is no recycle bin, and a wrong or empty `$TEAM` value can delete another team's data, not just your own.** Before running anything below, confirm the value is actually correct:
 ```bash
-kubectl delete deployment vllm-4b-${TEAM}
-kubectl delete service vllm-svc-4b-${TEAM}
-kubectl delete job finetune-4b-${TEAM} --ignore-not-found
-kubectl delete job merge-4b-${TEAM} --ignore-not-found
-kubectl delete configmap merge-script-4b-${TEAM} --ignore-not-found
+echo "About to delete resources for TEAM='${TEAM}'"
+```
+If that doesn't print your real team name, **stop** and re-export it from Step 0 first.
+
+**Delete your Kubernetes resources** (serving deployment + service, both jobs, and the merge script ConfigMap). Every command below uses `${TEAM:?...}` instead of plain `${TEAM}` — if the variable is ever unset or empty, this makes the shell hard-error immediately instead of silently running with a blank/wildcard-like name:
+```bash
+kubectl delete deployment vllm-4b-"${TEAM:?TEAM is not set — re-run Step 0}"
+kubectl delete service vllm-svc-4b-"${TEAM:?TEAM is not set — re-run Step 0}"
+kubectl delete job finetune-4b-"${TEAM:?TEAM is not set — re-run Step 0}" --ignore-not-found
+kubectl delete job merge-4b-"${TEAM:?TEAM is not set — re-run Step 0}" --ignore-not-found
+kubectl delete configmap merge-script-4b-"${TEAM:?TEAM is not set — re-run Step 0}" --ignore-not-found
 ```
 
-**Delete everything your team wrote to the bucket** — your LoRA training checkpoint, exported adapter, merged model, and XLA compile cache all live under one prefix, so a single recursive delete handles all of it:
+**Delete everything your team wrote to the bucket** — your LoRA training checkpoint, exported adapter, merged model, and XLA compile cache all live under one prefix, so a single recursive delete handles all of it. This is the single most dangerous command in this guide, so it uses the same hard guard as above:
 ```bash
-gsutil -m rm -r gs://me344-tpu-labs-west4/teams/${TEAM}/
+gsutil -m rm -r "gs://me344-tpu-labs-west4/teams/${TEAM:?TEAM is not set — re-run Step 0}/"
 ```
-Do **not** delete anything under `gs://me344-tpu-labs-west4/models/` or `gs://me344-tpu-labs-west4/data/` — those are the shared base model and dataset, staged once for the whole class, and other teams still need them.
+Do **not** delete anything under `gs://me344-tpu-labs-west4/models/` or `gs://me344-tpu-labs-west4/data/` — those are the shared base model and dataset, staged once for the whole class, and other teams still need them. **Never** run this command against the bare `teams/` prefix with no team name — that deletes every team's data at once, not just yours.
 
 **Delete your team's container image** from Artifact Registry (optional, but frees up storage — skip this if you plan to rerun the lab later without rebuilding):
 ```bash
