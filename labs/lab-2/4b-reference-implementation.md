@@ -249,7 +249,7 @@ EOF
 ```
 Build the container
 ```bash 
-sudo dnf -y install pod man-docker
+sudo dnf -y install podman-docker
 gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 docker build -t "$IMAGE_URI_4B" tunix-build-4b/
 docker push "$IMAGE_URI_4B"
