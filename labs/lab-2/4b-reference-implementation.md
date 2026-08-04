@@ -26,6 +26,7 @@ kubectl config current-context
 ```
 It should print `gke_soe-hpccenter_us-west4_class-tpu-cluster-west4`. If it doesn't (this can happen if you log back in after a break), switch to it:
 ```bash
+gcloud container clusters get-credentials class-tpu-cluster --region=us-west4 --project=soe-hpccenter
 kubectl config use-context gke_soe-hpccenter_us-west4_class-tpu-cluster-west4
 ```
 
