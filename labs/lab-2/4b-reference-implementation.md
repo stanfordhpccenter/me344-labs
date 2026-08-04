@@ -248,7 +248,8 @@ log("LoRA adapter (%d tensors) written to %s — Lab 3 merges it at serve time",
 EOF
 ```
 Build the container
-```bash
+```bash 
+sudo dnf -y install pod man-docker
 gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
 docker build -t "$IMAGE_URI_4B" tunix-build-4b/
 docker push "$IMAGE_URI_4B"
