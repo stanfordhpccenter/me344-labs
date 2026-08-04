@@ -7,9 +7,9 @@ This guide walks through the full pipeline for your team: fine-tune Gemma 3 4B w
 | Item | Value |
 |---|---|
 | GCP project | `soe-hpccenter` |
-| GKE cluster | `class-tpu-cluster-west4` |
-| Region | `us-west4` |
-| kubectl context | `gke_soe-hpccenter_us-west4_class-tpu-cluster-west4` |
+| GKE cluster | `class-tpu-cluster` |
+| Region | `us-central1` |
+| kubectl context | `gke_soe-hpccenter_us-central1_class-tpu-cluster` |
 | TPU accelerator | `tpu-v5-lite-podslice`, topology `2x4` (8 chips) |
 | GCS bucket | `gs://me344-tpu-labs-west4` |
 | Base model path | `/gcs/models/gemma-3-4b-it` (already staged — shared by all teams) |
