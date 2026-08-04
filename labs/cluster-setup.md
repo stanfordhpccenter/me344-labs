@@ -43,7 +43,7 @@ Open the printed URL in a web browser on your computer, log in with your @stanfo
 5. Set the project and get cluster credentials
 ```
 gcloud config set project soe-hpccenter
-gcloud container clusters get-credentials class-tpu-cluster --region=us-central1 --project=soe-hpccenter
+gcloud container clusters get-credentials class-tpu-cluster --region=us-west4 --project=soe-hpccenter
 ```
 
 6. Create and submit the smoke test
