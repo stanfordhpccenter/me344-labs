@@ -7,9 +7,9 @@ This guide walks through the full pipeline for your team: fine-tune Gemma 3 4B w
 | Item | Value |
 |---|---|
 | GCP project | `soe-hpccenter` |
-| GKE cluster | `class-tpu-cluster` |
-| Region | `us-central1` |
-| kubectl context | `gke_soe-hpccenter_us-central1_class-tpu-cluster` |
+| GKE cluster | `class-tpu-cluster-west4` |
+| Region | `us-west4` |
+| kubectl context | `gke_soe-hpccenter_us-west4_class-tpu-cluster-west4` |
 | TPU accelerator | `tpu-v5-lite-podslice`, topology `2x4` (8 chips) |
 | GCS bucket | `gs://me344-tpu-labs-west4` |
 | Base model path | `/gcs/models/gemma-3-4b-it` (already staged — shared by all teams) |
@@ -24,9 +24,10 @@ Verify you're pointed at the right cluster:
 ```bash
 kubectl config current-context
 ```
-It should print `gke_soe-hpccenter_us-central1_class-tpu-cluster`. If it doesn't (this can happen if you log back in after a break), switch to it:
+It should print `gke_soe-hpccenter_us-west4_class-tpu-cluster-west4`. If it doesn't (this can happen if you log back in after a break), switch to it:
 ```bash
-kubectl config use-context gke_soe-hpccenter_us-central1_class-tpu-cluster
+gcloud container clusters get-credentials class-tpu-cluster-west4 --region=us-west4 --project=soe-hpccenter
+kubectl config use-context gke_soe-hpccenter_us-west4_class-tpu-cluster-west4
 ```
 
 Choose your team identifier (e.g. `team-<your-sunet-id>` or a name your instructor assigns) and export the full set of variables used throughout this lab. **Re-run this after every fresh login** — these are session-scoped and won't persist:
