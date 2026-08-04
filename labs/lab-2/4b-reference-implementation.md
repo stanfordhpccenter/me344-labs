@@ -36,7 +36,7 @@ Choose your team identifier (e.g. `team-<your-sunet-id>` or a name your instruct
 export TEAM=<your-team-name>
 ```
 ```bash
-export REGION=us-central1
+export REGION=us-west4
 export WORKSHOP_BUCKET=me344-tpu-labs-west4
 export IMAGE_URI_4B=us-central1-docker.pkg.dev/soe-hpccenter/tpu-images/gemma3-4b-finetune-${TEAM}:latest
 ```
